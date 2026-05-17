@@ -59,6 +59,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const guestBtn = document.getElementById('guest-btn');
     const startBtn = document.getElementById('start-btn');
     const walletStatus = document.getElementById('wallet-status');
+    const audioBtn = document.getElementById('audio-toggle-btn');
+
+    // Audio Mute Toggle
+    if (audioBtn) {
+        audioBtn.addEventListener('click', () => {
+            if (window.gameAudio) {
+                const enabled = window.gameAudio.toggleMute();
+                audioBtn.textContent = enabled ? '🔊' : '🔇';
+                window.gameAudio.playUIBlip();
+            }
+        });
+    }
+
+    // Interactive Button Hover/MouseEnter SFX delegation
+    document.body.addEventListener('mouseenter', (e) => {
+        if (e.target && e.target.tagName === 'BUTTON' && window.gameAudio) {
+            window.gameAudio.playUIBlip();
+        }
+    }, true);
+
+    // Click UI sound
+    document.body.addEventListener('click', (e) => {
+        if (e.target && e.target.tagName === 'BUTTON' && window.gameAudio && e.target.id !== 'audio-toggle-btn') {
+            window.gameAudio.playUIBlip();
+        }
+    }, true);
 
     connectBtn.addEventListener('click', async () => {
         connectBtn.textContent = 'CONNECTING...';

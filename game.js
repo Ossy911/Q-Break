@@ -9,6 +9,12 @@ class AudioController {
         this.enabled = true;
     }
 
+    toggleMute() {
+        this.enabled = !this.enabled;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        return this.enabled;
+    }
+
     playTone(freq, type, duration, vol=0.1) {
         if (!this.enabled) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -103,7 +109,8 @@ class AudioController {
         osc.stop(this.ctx.currentTime + 0.15);
     }
 }
-const gameAudio = new AudioController();
+window.gameAudio = new AudioController();
+const gameAudio = window.gameAudio;
 
 const CONFIG = {
     type: Phaser.AUTO,
