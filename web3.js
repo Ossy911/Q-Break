@@ -80,6 +80,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fullscreen Toggle Support
+    const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', () => {
+            toggleFullscreen();
+        });
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'f') {
+            if (document.activeElement.tagName === 'INPUT') return;
+            toggleFullscreen();
+        }
+    });
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log('Error enabling fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+        if (window.gameAudio) window.gameAudio.playUIBlip();
+    }
+
     // Audio Mute Toggle with cache restoration
     if (audioBtn) {
         const initialSfx = localStorage.getItem('qbreak_sfx_enabled') !== 'false';
