@@ -833,6 +833,26 @@ class GameScene extends Phaser.Scene {
         this.entropy = Math.max(0, this.entropy - 20);
         this.quantumCharges = Math.min(5, this.quantumCharges + 2);
         
+        // Floating Neon Secure Indicator
+        const floatText = this.add.text(vault.x, vault.y - 30, 'SECURE APPROVED +1000', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#00f2ff',
+            stroke: '#ff00ff',
+            strokeThickness: 2
+        }).setOrigin(0.5);
+        
+        this.tweens.add({
+            targets: floatText,
+            y: floatText.y - 80,
+            alpha: 0,
+            scale: 1.2,
+            duration: 1200,
+            ease: 'Cubic.easeOut',
+            onComplete: () => floatText.destroy()
+        });
+
         this.updateUI();
         this.showMessage("QUIP SECURED: ENTROPY PURGED");
     }
