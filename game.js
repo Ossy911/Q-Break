@@ -197,6 +197,7 @@ class GameScene extends Phaser.Scene {
         // Background Particles
         this.createBackgroundGrid();
         
+        this.setActiveWeapon('classical');
         // Start first data block immediately
         this.spawnDataBlock();
     }
@@ -341,6 +342,15 @@ class GameScene extends Phaser.Scene {
             // Only fire if not touching the joystick or action button
             if (pointer.x > 200 || pointer.y < CONFIG.height - 200) {
                 this.fire();
+            }
+        });
+
+        // Tactical Scroll Wheel Blaster Switch Support
+        this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+            if (deltaY > 0) {
+                this.setActiveWeapon('quantum');
+            } else if (deltaY < 0) {
+                this.setActiveWeapon('classical');
             }
         });
 
