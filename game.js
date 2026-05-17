@@ -536,13 +536,19 @@ class GameScene extends Phaser.Scene {
         this.currentWave++;
         this.enemiesDefeatedInWave = 0;
         this.isWaveTransitioning = true;
-        this.spawnEvent.paused = true;
+        if (this.spawnEvent) this.spawnEvent.destroy();
         this.showMessage(`WAVE ${this.currentWave} INCOMING`);
         
         // Resume after 3 seconds
         this.time.delayedCall(3000, () => {
             this.isWaveTransitioning = false;
-            this.spawnEvent.paused = false;
+            const newDelay = Math.max(400, 2000 - (this.currentWave * 150));
+            this.spawnEvent = this.time.addEvent({
+                delay: newDelay,
+                callback: this.spawnEnemy,
+                callbackScope: this,
+                loop: true
+            });
         });
         
         this.updateUI();
