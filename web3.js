@@ -6,12 +6,14 @@
 class QuipNetwork {
     constructor() {
         this.isConnected = false;
+        this.isGuest = false;
         this.account = null;
         this.networkId = 'quip-testnet-1';
         this.lastDailyCheck = null;
     }
 
     async connect() {
+        this.isGuest = false;
         // Simulate wallet selection delay
         return new Promise(resolve => {
             setTimeout(() => {
@@ -54,12 +56,14 @@ window.quip = new QuipNetwork();
 // UI Integration
 document.addEventListener('DOMContentLoaded', () => {
     const connectBtn = document.getElementById('connect-wallet-btn');
+    const guestBtn = document.getElementById('guest-btn');
     const startBtn = document.getElementById('start-btn');
     const walletStatus = document.getElementById('wallet-status');
 
     connectBtn.addEventListener('click', async () => {
         connectBtn.textContent = 'CONNECTING...';
         connectBtn.disabled = true;
+        if (guestBtn) guestBtn.style.display = 'none';
         
         const account = await window.quip.connect();
         
@@ -72,4 +76,27 @@ document.addEventListener('DOMContentLoaded', () => {
         
         startBtn.classList.remove('hidden');
     });
+
+    if (guestBtn) {
+        guestBtn.addEventListener('click', () => {
+            window.quip.isConnected = false;
+            window.quip.isGuest = true;
+            window.quip.account = {
+                address: 'GUEST_OPERATOR',
+                type: 'Guest-Session',
+                security: 'None'
+            };
+            
+            walletStatus.innerHTML = `
+                <div class="account-card">
+                    <span class="label" style="color: var(--magenta); text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);">GUEST SESSION ACTIVE</span>
+                    <span class="value">UNREGISTERED_OPERATOR</span>
+                </div>
+            `;
+            
+            startBtn.classList.remove('hidden');
+            connectBtn.style.display = 'none';
+            guestBtn.style.display = 'none';
+        });
+    }
 });

@@ -763,6 +763,20 @@ class GameScene extends Phaser.Scene {
         document.getElementById('game-over-screen').classList.remove('hidden');
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('final-vaults').textContent = this.vaultsSecured;
+
+        // Handle guest score commit button style
+        const commitBtn = document.getElementById('commit-score-btn');
+        if (window.quip.isGuest) {
+            commitBtn.textContent = 'CONNECT TO SAVE SCORE';
+            commitBtn.disabled = true;
+            commitBtn.style.opacity = '0.5';
+            commitBtn.style.cursor = 'not-allowed';
+        } else {
+            commitBtn.textContent = 'COMMIT SCORE TO QUIP';
+            commitBtn.disabled = false;
+            commitBtn.style.opacity = '1';
+            commitBtn.style.cursor = 'pointer';
+        }
     }
 }
 
