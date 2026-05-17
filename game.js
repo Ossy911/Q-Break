@@ -141,6 +141,14 @@ class GameScene extends Phaser.Scene {
             loop: true
         });
 
+        // Power-Up Spawn Timer System (10 seconds)
+        this.time.addEvent({
+            delay: 10000,
+            callback: this.spawnPowerUp,
+            callbackScope: this,
+            loop: true
+        });
+
         // Background Particles
         this.createBackgroundGrid();
         
@@ -279,6 +287,7 @@ class GameScene extends Phaser.Scene {
         this.projectiles = this.physics.add.group();
         this.quips = this.physics.add.group();
         this.datablocks = this.physics.add.group();
+        this.powerups = this.physics.add.group();
     }
 
     setupInput() {
@@ -345,6 +354,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
         this.physics.add.overlap(this.player, this.enemies, this.hitPlayer, null, this);
         this.physics.add.overlap(this.player, this.datablocks, this.collectData, null, this);
+        this.physics.add.overlap(this.player, this.powerups, this.collectPowerUp, null, this);
     }
 
     setupUIEvents() {
@@ -530,6 +540,35 @@ class GameScene extends Phaser.Scene {
             duration: 1000,
             yoyo: true,
             repeat: -1
+        });
+    }
+
+    spawnPowerUp() {
+        if (this.isGameOver) return;
+        const x = Phaser.Math.Between(100, CONFIG.width - 100);
+        const y = Phaser.Math.Between(100, CONFIG.height - 100);
+        
+        const types = ['shield', 'speed', 'charge'];
+        const type = Phaser.Math.RND.pick(types);
+        
+        const powerup = this.powerups.create(x, y, `powerup-${type}`);
+        powerup.powerupType = type;
+        powerup.setInteractive();
+        
+        // Premium floating hover animations
+        this.tweens.add({
+            targets: powerup,
+            y: y - 8,
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
+        
+        // Self-destruction timeout (destroys itself if not picked up in 8s)
+        this.time.delayedCall(8000, () => {
+            if (powerup && powerup.active) {
+                powerup.destroy();
+            }
         });
     }
 
