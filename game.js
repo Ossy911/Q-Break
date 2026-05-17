@@ -236,6 +236,18 @@ class GameScene extends Phaser.Scene {
         this.player.setDrag(1000);
         this.player.setMaxVelocity(300);
         this.player.setDepth(10);
+
+        // Player trail particles for premium movement feel
+        this.trailParticles = this.add.particles(0, 0, 'player', {
+            speed: 0,
+            scale: { start: 0.8, end: 0 },
+            alpha: { start: 0.3, end: 0 },
+            lifespan: 300,
+            blendMode: 'ADD',
+            frequency: 50,
+            follow: this.player
+        });
+        this.trailParticles.setDepth(9);
     }
 
     setupGroups() {
