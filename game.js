@@ -1,0 +1,532 @@
+/**
+ * Q-Break: Quantum Breach
+ * Core Game Logic using Phaser 3
+ */
+
+const CONFIG = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    parent: 'game-container',
+    backgroundColor: '#0a0a0f',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: null // To be set
+};
+
+class GameScene extends Phaser.Scene {
+    constructor() {
+        super('GameScene');
+        this.player = null;
+        this.enemies = null;
+        this.projectiles = null;
+        this.quips = null;
+        this.entropy = 0;
+        this.score = 0;
+        this.vaultsSecured = 0;
+        this.activeWeapon = 'classical';
+        this.quantumCharges = 3;
+        this.isGameOver = false;
+        this.difficultyTimer = 0;
+    }
+
+    preload() {
+        // We'll generate textures procedurally in create()
+    }
+
+    create() {
+        this.createTextures();
+        this.setupWorld();
+        this.setupPlayer();
+        this.setupInput();
+        this.setupGroups();
+        this.setupCollision();
+        this.setupUIEvents();
+        
+        // Start Spawning
+        this.time.addEvent({
+            delay: 2000,
+            callback: this.spawnEnemy,
+            callbackScope: this,
+            loop: true
+        });
+
+        this.time.addEvent({
+            delay: 15000,
+            callback: this.spawnDataBlock,
+            callbackScope: this,
+            loop: true
+        });
+
+        // Background Particles
+        this.createBackgroundGrid();
+        
+        // Start first data block immediately
+        this.spawnDataBlock();
+    }
+
+    createTextures() {
+        // Player Texture
+        const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+        graphics.lineStyle(2, 0x00f2ff);
+        graphics.strokeCircle(16, 16, 12);
+        graphics.fillStyle(0x00f2ff, 0.3);
+        graphics.fillCircle(16, 16, 8);
+        graphics.generateTexture('player', 32, 32);
+        graphics.clear();
+
+        // Classical Projectile
+        graphics.fillStyle(0x00f2ff, 1);
+        graphics.fillCircle(4, 4, 3);
+        graphics.generateTexture('bullet-classical', 8, 8);
+        graphics.clear();
+
+        // Quantum Projectile
+        graphics.fillStyle(0xff00ff, 1);
+        graphics.fillCircle(8, 8, 6);
+        graphics.lineStyle(1, 0xffffff);
+        graphics.strokeCircle(8, 8, 6);
+        graphics.generateTexture('bullet-quantum', 16, 16);
+        graphics.clear();
+
+        // Enemy: Swarm
+        graphics.lineStyle(1, 0xff00ff);
+        graphics.strokeTriangle(0, 16, 16, 16, 8, 0);
+        graphics.generateTexture('enemy-swarm', 16, 16);
+        graphics.clear();
+
+        // Enemy: Brute
+        graphics.lineStyle(2, 0x7a00ff);
+        graphics.strokeRect(0, 0, 32, 32);
+        graphics.fillStyle(0x7a00ff, 0.2);
+        graphics.fillRect(0, 0, 32, 32);
+        graphics.generateTexture('enemy-brute', 32, 32);
+        graphics.clear();
+
+        // Enemy: Satoshi (Glitch)
+        graphics.lineStyle(1, 0xffffff);
+        graphics.strokeRect(0, 0, 20, 20);
+        graphics.generateTexture('enemy-satoshi', 20, 20);
+        graphics.clear();
+
+        // Data Block
+        graphics.lineStyle(2, 0x00f2ff);
+        graphics.strokeRect(0, 0, 24, 24);
+        graphics.generateTexture('datablock', 24, 24);
+        graphics.clear();
+
+        // QUIP Vault
+        graphics.lineStyle(3, 0x00f2ff);
+        graphics.strokeCircle(48, 48, 40);
+        graphics.generateTexture('vault-base', 96, 96);
+        graphics.clear();
+    }
+
+    createBackgroundGrid() {
+        const grid = this.add.grid(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            this.cameras.main.width,
+            this.cameras.main.height,
+            64, 64, 0x000000, 0, 0x00f2ff, 0.05
+        );
+        grid.setDepth(-1);
+    }
+
+    setupWorld() {
+        this.physics.world.setBounds(0, 0, this.cameras.main.width, this.cameras.main.height);
+    }
+
+    setupPlayer() {
+        this.player = this.physics.add.sprite(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'player'
+        );
+        this.player.setCollideWorldBounds(true);
+        this.player.setDrag(1000);
+        this.player.setMaxVelocity(300);
+        this.player.setDepth(10);
+    }
+
+    setupGroups() {
+        this.enemies = this.physics.add.group();
+        this.projectiles = this.physics.add.group();
+        this.quips = this.physics.add.group();
+        this.datablocks = this.physics.add.group();
+    }
+
+    setupInput() {
+        this.keys = this.input.keyboard.addKeys('W,A,S,D,ONE,TWO,SPACE');
+        this.input.on('pointerdown', (pointer) => {
+            // Only fire if not touching the joystick or action button
+            if (pointer.x > 200 || pointer.y < CONFIG.height - 200) {
+                this.fire();
+            }
+        });
+
+        // Mobile Action Button
+        const mobileAction = document.getElementById('mobile-action');
+        mobileAction.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            // Action handled by collision normally, but we could trigger it here
+        });
+
+        // Joystick Setup
+        this.joystick = {
+            active: false,
+            baseX: 0,
+            baseY: 0,
+            vectorX: 0,
+            vectorY: 0
+        };
+
+        const joystickEl = document.getElementById('joystick-move');
+        const knobEl = joystickEl.querySelector('.joystick-knob');
+
+        joystickEl.addEventListener('pointerdown', (e) => {
+            this.joystick.active = true;
+            const rect = joystickEl.getBoundingClientRect();
+            this.joystick.baseX = rect.left + rect.width / 2;
+            this.joystick.baseY = rect.top + rect.height / 2;
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!this.joystick.active) return;
+            
+            const dx = e.clientX - this.joystick.baseX;
+            const dy = e.clientY - this.joystick.baseY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const maxDist = 40;
+            
+            const angle = Math.atan2(dy, dx);
+            const moveDist = Math.min(dist, maxDist);
+            
+            this.joystick.vectorX = (Math.cos(angle) * moveDist) / maxDist;
+            this.joystick.vectorY = (Math.sin(angle) * moveDist) / maxDist;
+            
+            knobEl.style.transform = `translate(calc(-50% + ${this.joystick.vectorX * maxDist}px), calc(-50% + ${this.joystick.vectorY * maxDist}px))`;
+        });
+
+        window.addEventListener('pointerup', () => {
+            this.joystick.active = false;
+            this.joystick.vectorX = 0;
+            this.joystick.vectorY = 0;
+            knobEl.style.transform = `translate(-50%, -50%)`;
+        });
+    }
+
+    setupCollision() {
+        this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
+        this.physics.add.overlap(this.player, this.enemies, this.hitPlayer, null, this);
+        this.physics.add.overlap(this.player, this.datablocks, this.collectData, null, this);
+    }
+
+    setupUIEvents() {
+        // Initial UI update
+        this.updateUI();
+    }
+
+    update(time, delta) {
+        if (this.isGameOver) return;
+
+        this.handleMovement();
+        this.handleWeaponSwitch();
+        this.handleEntropy(delta);
+        
+        // Rotate player towards mouse
+        const pointer = this.input.activePointer;
+        const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, pointer.x, pointer.y);
+        this.player.setRotation(angle);
+
+        // Enemy AI
+        this.enemies.getChildren().forEach(enemy => {
+            this.physics.moveToObject(enemy, this.player, enemy.speed || 100);
+        });
+
+        // QUIP Progress
+        this.quips.getChildren().forEach(quip => {
+            if (quip.status === 'approving') {
+                quip.progress += delta / 1000;
+                quip.overlay.setAlpha(0.2 + 0.8 * (quip.progress / 10));
+                if (quip.progress >= 10) {
+                    this.completeVault(quip);
+                }
+            }
+        });
+    }
+
+    handleMovement() {
+        const speed = 300;
+        
+        // Keyboard
+        let vx = 0;
+        let vy = 0;
+        
+        if (this.keys.W.isDown) vy = -1;
+        else if (this.keys.S.isDown) vy = 1;
+        
+        if (this.keys.A.isDown) vx = -1;
+        else if (this.keys.D.isDown) vx = 1;
+
+        // Joystick Override
+        if (this.joystick.active) {
+            vx = this.joystick.vectorX;
+            vy = this.joystick.vectorY;
+        }
+
+        if (vx !== 0 || vy !== 0) {
+            this.player.setAccelerationX(vx * speed * 5);
+            this.player.setAccelerationY(vy * speed * 5);
+        } else {
+            this.player.setAccelerationX(0);
+            this.player.setAccelerationY(0);
+        }
+    }
+
+    handleWeaponSwitch() {
+        if (this.keys.ONE.isDown) this.setActiveWeapon('classical');
+        if (this.keys.TWO.isDown) this.setActiveWeapon('quantum');
+    }
+
+    setActiveWeapon(type) {
+        this.activeWeapon = type;
+        document.querySelectorAll('.weapon').forEach(w => w.classList.remove('active'));
+        document.getElementById(`weapon-${type}`).classList.add('active');
+    }
+
+    handleEntropy(delta) {
+        this.entropy += (delta / 1000) * 0.5; // Base entropy growth
+        if (this.entropy >= 100) {
+            this.entropy = 100;
+            this.gameOver();
+        }
+        this.updateUI();
+    }
+
+    fire() {
+        if (this.isGameOver) return;
+
+        if (this.activeWeapon === 'quantum') {
+            if (this.quantumCharges <= 0) return;
+            this.quantumCharges--;
+            this.updateUI();
+        }
+
+        const pointer = this.input.activePointer;
+        const bullet = this.projectiles.create(this.player.x, this.player.y, `bullet-${this.activeWeapon}`);
+        bullet.type = this.activeWeapon;
+        
+        this.physics.moveTo(bullet, pointer.x, pointer.y, 600);
+        bullet.setRotation(Phaser.Math.Angle.Between(bullet.x, bullet.y, pointer.x, pointer.y));
+        
+        // Lifespan
+        this.time.delayedCall(2000, () => bullet.destroy());
+    }
+
+    spawnEnemy() {
+        if (this.isGameOver) return;
+
+        const side = Phaser.Math.Between(0, 3);
+        let x, y;
+        if (side === 0) { x = Phaser.Math.Between(0, CONFIG.width); y = -50; }
+        else if (side === 1) { x = CONFIG.width + 50; y = Phaser.Math.Between(0, CONFIG.height); }
+        else if (side === 2) { x = Phaser.Math.Between(0, CONFIG.width); y = CONFIG.height + 50; }
+        else { x = -50; y = Phaser.Math.Between(0, CONFIG.height); }
+
+        const rand = Math.random();
+        let type = 'swarm';
+        if (rand > 0.9) type = 'brute';
+        else if (rand > 0.7) type = 'satoshi';
+
+        const enemy = this.enemies.create(x, y, `enemy-${type}`);
+        enemy.enemyType = type;
+        enemy.health = type === 'brute' ? 5 : 1;
+        enemy.speed = type === 'satoshi' ? 200 : 100;
+        
+        if (type === 'satoshi') {
+            enemy.setTint(0xffffff);
+            // Glitch effect
+            this.time.addEvent({
+                delay: 200,
+                callback: () => enemy.setAlpha(Math.random()),
+                loop: true
+            });
+        }
+    }
+
+    spawnDataBlock() {
+        if (this.isGameOver) return;
+        const x = Phaser.Math.Between(100, CONFIG.width - 100);
+        const y = Phaser.Math.Between(100, CONFIG.height - 100);
+        const db = this.datablocks.create(x, y, 'datablock');
+        db.setInteractive();
+        
+        // Floating animation
+        this.tweens.add({
+            targets: db,
+            y: y - 10,
+            duration: 1000,
+            yoyo: true,
+            repeat: -1
+        });
+    }
+
+    collectData(player, db) {
+        db.destroy();
+        this.initVault(db.x, db.y);
+    }
+
+    initVault(x, y) {
+        const vault = this.quips.create(x, y, 'vault-base');
+        vault.status = 'approving';
+        vault.progress = 0;
+        vault.overlay = this.add.circle(x, y, 40, 0x00f2ff, 0.2);
+        
+        // UI Notification
+        this.showMessage("VAULT INITIALIZED: DEFEND AREA");
+    }
+
+    completeVault(vault) {
+        vault.status = 'claimed';
+        vault.overlay.destroy();
+        
+        // Visual Pop
+        const fx = this.add.circle(vault.x, vault.y, 40, 0x00f2ff, 1);
+        this.tweens.add({
+            targets: fx,
+            scale: 2,
+            alpha: 0,
+            duration: 500,
+            onComplete: () => fx.destroy()
+        });
+
+        vault.destroy();
+        this.score += 1000;
+        this.vaultsSecured++;
+        this.entropy = Math.max(0, this.entropy - 20);
+        this.quantumCharges = Math.min(5, this.quantumCharges + 2);
+        
+        this.updateUI();
+        this.showMessage("QUIP SECURED: ENTROPY PURGED");
+    }
+
+    hitEnemy(bullet, enemy) {
+        // Quantum enemies (Brutes) need Quantum bullets?
+        // Let's make Brutes immune to classical
+        if (enemy.enemyType === 'brute' && bullet.type === 'classical') {
+            bullet.destroy();
+            return;
+        }
+
+        enemy.health--;
+        bullet.destroy();
+
+        if (enemy.health <= 0) {
+            this.score += 100;
+            this.createExplosion(enemy.x, enemy.y, enemy.enemyType === 'brute' ? 0x7a00ff : 0xff00ff);
+            enemy.destroy();
+            this.updateUI();
+        }
+    }
+
+    hitPlayer(player, enemy) {
+        this.entropy += 5;
+        this.createExplosion(enemy.x, enemy.y, 0xff0000);
+        enemy.destroy();
+        this.cameras.main.shake(100, 0.01);
+        this.updateUI();
+    }
+
+    createExplosion(x, y, color) {
+        for (let i = 0; i < 10; i++) {
+            const p = this.add.circle(x, y, 2, color);
+            this.physics.add.existing(p);
+            p.body.setVelocity(
+                Phaser.Math.Between(-100, 100),
+                Phaser.Math.Between(-100, 100)
+            );
+            this.tweens.add({
+                targets: p,
+                alpha: 0,
+                duration: 500,
+                onComplete: () => p.destroy()
+            });
+        }
+    }
+
+    updateUI() {
+        document.getElementById('entropy-fill').style.width = `${this.entropy}%`;
+        document.getElementById('entropy-value').textContent = `${Math.floor(this.entropy)}%`;
+        document.getElementById('score-value').textContent = this.score.toString().padStart(6, '0');
+        document.getElementById('vaults-value').textContent = `${this.vaultsSecured}/5`;
+        
+        // Quantum Charges
+        const chargeContainer = document.getElementById('quantum-charges');
+        chargeContainer.innerHTML = '';
+        for (let i = 0; i < this.quantumCharges; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'charge-dot';
+            chargeContainer.appendChild(dot);
+        }
+
+        if (this.entropy > 80) {
+            document.getElementById('entropy-fill').style.background = 'var(--magenta)';
+        } else {
+            document.getElementById('entropy-fill').style.background = 'linear-gradient(90deg, var(--cyan), var(--magenta))';
+        }
+    }
+
+    showMessage(text) {
+        const prompt = document.getElementById('interaction-prompt');
+        prompt.textContent = text;
+        prompt.classList.remove('hidden');
+        this.time.delayedCall(3000, () => prompt.classList.add('hidden'));
+    }
+
+    gameOver() {
+        this.isGameOver = true;
+        this.physics.pause();
+        this.player.setTint(0xff0000);
+        
+        document.getElementById('ui-layer').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.remove('hidden');
+        document.getElementById('final-score').textContent = this.score;
+        document.getElementById('final-vaults').textContent = this.vaultsSecured;
+    }
+}
+
+// Initialization
+let game;
+document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('ui-layer').classList.remove('hidden');
+    
+    CONFIG.scene = GameScene;
+    game = new Phaser.Game(CONFIG);
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+    window.location.reload();
+});
+
+document.getElementById('commit-score-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('commit-score-btn');
+    btn.textContent = 'COMMITTING...';
+    btn.disabled = true;
+    
+    const score = parseInt(document.getElementById('final-score').textContent);
+    const vaults = parseInt(document.getElementById('final-vaults').textContent);
+    
+    const result = await window.quip.commitScore(score, vaults);
+    if (result.success) {
+        btn.textContent = 'COMMITTED: ' + result.hash.substring(0, 10) + '...';
+        btn.style.borderColor = 'var(--cyan)';
+        btn.style.color = 'var(--cyan)';
+    }
+});

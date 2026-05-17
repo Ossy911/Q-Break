@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Q-Break: Quantum Breach | Quip Network</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <!-- UI Overlay -->
+    <div id="ui-layer" class="hidden">
+        <div class="header">
+            <div class="entropy-container">
+                <span class="label">ENTROPY LEVEL</span>
+                <div class="entropy-bar-wrapper">
+                    <div id="entropy-fill" class="entropy-fill"></div>
+                </div>
+                <span id="entropy-value" class="value">0%</span>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="label">SCORE</span>
+                    <span id="score-value" class="value">000000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">VAULTS</span>
+                    <span id="vaults-value" class="value">0/5</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="weapon-indicator" class="weapon-indicator">
+            <div class="weapon active" id="weapon-classical">
+                <span class="key">1</span>
+                <span class="name">CLASSICAL</span>
+            </div>
+            <div class="weapon" id="weapon-quantum">
+                <span class="key">2</span>
+                <span class="name">QUANTUM</span>
+                <div class="charges" id="quantum-charges"></div>
+            </div>
+        </div>
+
+        <div id="interaction-prompt" class="interaction-prompt hidden">
+            PRESS <span class="key">SPACE</span> TO INITIALIZE QUIP
+        </div>
+
+        <div class="mobile-controls">
+            <div id="joystick-move" class="joystick-container">
+                <div class="joystick-knob"></div>
+            </div>
+            <div class="action-btn-container">
+                <button id="mobile-action" class="action-btn">INITIALIZE<br>QUIP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start/Menu Screen -->
+    <div id="menu-screen" class="overlay-screen">
+        <div class="logo-container">
+            <h1 class="glitch" data-text="Q-BREAK">Q-BREAK</h1>
+            <p class="subtitle">QUANTUM BREACH</p>
+        </div>
+        <div class="menu-content">
+            <div id="wallet-status" class="wallet-status">
+                <button id="connect-wallet-btn" class="primary-btn">CONNECT QUIP ACCOUNT</button>
+            </div>
+            <button id="start-btn" class="secondary-btn hidden">INITIALIZE SECOPS</button>
+        </div>
+        <div class="instructions">
+            <p>WASD to Move • MOUSE to Aim & Shoot • SPACE for QUIP Vaults</p>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="overlay-screen hidden">
+        <h2 class="title-threat">NETWORK COMPROMISED</h2>
+        <div class="final-stats">
+            <p>Final Score: <span id="final-score">0</span></p>
+            <p>Vaults Secured: <span id="final-vaults">0</span></p>
+        </div>
+        <button id="restart-btn" class="primary-btn">RETRY SALVAGE</button>
+        <button id="commit-score-btn" class="secondary-btn">COMMIT SCORE TO QUIP</button>
+    </div>
+
+    <script src="web3.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
