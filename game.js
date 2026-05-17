@@ -127,7 +127,7 @@ class GameScene extends Phaser.Scene {
         this.setupUIEvents();
         
         // Start Spawning
-        this.time.addEvent({
+        this.spawnEvent = this.time.addEvent({
             delay: 2000,
             callback: this.spawnEnemy,
             callbackScope: this,
@@ -417,7 +417,7 @@ class GameScene extends Phaser.Scene {
     }
 
     spawnEnemy() {
-        if (this.isGameOver) return;
+        if (this.isGameOver || this.isWaveTransitioning) return;
 
         const side = Phaser.Math.Between(0, 3);
         let x, y;
@@ -519,8 +519,32 @@ class GameScene extends Phaser.Scene {
             this.score += 100;
             this.createExplosion(enemy.x, enemy.y, enemy.enemyType === 'brute' ? 0x7a00ff : 0xff00ff);
             enemy.destroy();
+            this.enemiesDefeatedInWave++;
+            this.checkWaveProgress();
             this.updateUI();
         }
+    }
+
+    checkWaveProgress() {
+        if (this.enemiesDefeatedInWave >= 10 + (this.currentWave * 2)) {
+            this.advanceWave();
+        }
+    }
+
+    advanceWave() {
+        this.currentWave++;
+        this.enemiesDefeatedInWave = 0;
+        this.isWaveTransitioning = true;
+        this.spawnEvent.paused = true;
+        this.showMessage(`WAVE ${this.currentWave} INCOMING`);
+        
+        // Resume after 3 seconds
+        this.time.delayedCall(3000, () => {
+            this.isWaveTransitioning = false;
+            this.spawnEvent.paused = false;
+        });
+        
+        this.updateUI();
     }
 
     hitPlayer(player, enemy) {
