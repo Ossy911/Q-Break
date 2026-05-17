@@ -434,7 +434,8 @@ class GameScene extends Phaser.Scene {
         const enemy = this.enemies.create(x, y, `enemy-${type}`);
         enemy.enemyType = type;
         enemy.health = type === 'brute' ? 5 : 1;
-        enemy.speed = type === 'satoshi' ? 200 : 100;
+        let baseSpeed = type === 'satoshi' ? 200 : 100;
+        enemy.speed = baseSpeed + (this.currentWave * 15);
         
         if (type === 'satoshi') {
             enemy.setTint(0xffffff);
