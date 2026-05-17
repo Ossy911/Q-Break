@@ -7,6 +7,7 @@ class QuipNetwork {
     constructor() {
         this.isConnected = false;
         this.isGuest = false;
+        this.dailyBonusClaimed = localStorage.getItem('quip_daily_claimed') === 'true';
         this.account = null;
         this.networkId = 'quip-testnet-1';
         this.lastDailyCheck = null;
@@ -86,6 +87,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, true);
 
+    const dailyBtn = document.getElementById('daily-check-btn');
+
+    // Restore Claimed Daily Status UI on load if persisted
+    if (dailyBtn && window.quip.dailyBonusClaimed) {
+        dailyBtn.textContent = 'DAILY NODE INTEGRITY SECURED (+2)';
+        dailyBtn.style.borderColor = 'var(--green)';
+        dailyBtn.style.color = 'var(--green)';
+        dailyBtn.style.textShadow = '0 0 10px rgba(57, 255, 20, 0.4)';
+        dailyBtn.disabled = true;
+    }
+
+    if (dailyBtn) {
+        dailyBtn.addEventListener('click', async () => {
+            dailyBtn.textContent = 'PERFORMING BLOCK INTEGRITY CHECK...';
+            dailyBtn.disabled = true;
+            
+            const result = await window.quip.performNodeHealthCheck();
+            if (result.success) {
+                window.quip.dailyBonusClaimed = true;
+                localStorage.setItem('quip_daily_claimed', 'true');
+                dailyBtn.textContent = 'DAILY NODE INTEGRITY SECURED (+2)';
+                dailyBtn.style.borderColor = 'var(--green)';
+                dailyBtn.style.color = 'var(--green)';
+                dailyBtn.style.textShadow = '0 0 10px rgba(57, 255, 20, 0.4)';
+                
+                // Triumph UI Sound!
+                if (window.gameAudio) {
+                    window.gameAudio.playVaultSecured();
+                }
+            }
+        });
+    }
+
     connectBtn.addEventListener('click', async () => {
         connectBtn.textContent = 'CONNECTING...';
         connectBtn.disabled = true;
@@ -100,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
+        if (dailyBtn) dailyBtn.classList.remove('hidden');
         startBtn.classList.remove('hidden');
     });
 

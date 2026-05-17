@@ -139,7 +139,7 @@ class GameScene extends Phaser.Scene {
         this.score = 0;
         this.vaultsSecured = 0;
         this.activeWeapon = 'classical';
-        this.quantumCharges = 3;
+        this.quantumCharges = (window.quip && window.quip.dailyBonusClaimed) ? 5 : 3;
         this.isGameOver = false;
         this.difficultyTimer = 0;
         this.currentWave = 1;
