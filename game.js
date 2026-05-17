@@ -556,10 +556,16 @@ class GameScene extends Phaser.Scene {
 
     hitPlayer(player, enemy) {
         gameAudio.playPlayerHit();
-        this.entropy += 5;
+        const damage = enemy.enemyType === 'brute' ? 15 : 5;
+        this.entropy += damage;
         this.createExplosion(enemy.x, enemy.y, 0xff0000);
         enemy.destroy();
-        this.cameras.main.shake(100, 0.01);
+        
+        // Dynamic camera shake depending on impact
+        const shakeDuration = enemy.enemyType === 'brute' ? 300 : 150;
+        const shakeIntensity = enemy.enemyType === 'brute' ? 0.03 : 0.01;
+        this.cameras.main.shake(shakeDuration, shakeIntensity);
+        
         this.updateUI();
     }
 
