@@ -555,6 +555,7 @@ class GameScene extends Phaser.Scene {
         document.getElementById('entropy-value').textContent = `${Math.floor(this.entropy)}%`;
         document.getElementById('score-value').textContent = this.score.toString().padStart(6, '0');
         document.getElementById('vaults-value').textContent = `${this.vaultsSecured}/5`;
+        document.getElementById('wave-value').textContent = this.currentWave;
         
         // Quantum Charges
         const chargeContainer = document.getElementById('quantum-charges');
