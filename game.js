@@ -672,10 +672,11 @@ class GameScene extends Phaser.Scene {
             chargeContainer.appendChild(dot);
         }
 
+        const entropyFill = document.getElementById('entropy-fill');
         if (this.entropy > 80) {
-            document.getElementById('entropy-fill').style.background = 'var(--magenta)';
+            entropyFill.classList.add('critical');
         } else {
-            document.getElementById('entropy-fill').style.background = 'linear-gradient(90deg, var(--cyan), var(--magenta))';
+            entropyFill.classList.remove('critical');
         }
     }
 
