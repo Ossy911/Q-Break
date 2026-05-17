@@ -171,6 +171,12 @@ body {
     border-radius: 50%;
     background: var(--magenta);
     box-shadow: 0 0 5px var(--magenta);
+    animation: pulse-charge 1s infinite alternate;
+}
+
+@keyframes pulse-charge {
+    0% { box-shadow: 0 0 3px var(--magenta); transform: scale(0.95); }
+    100% { box-shadow: 0 0 8px var(--magenta); transform: scale(1.05); }
 }
 
 /* Screens */
