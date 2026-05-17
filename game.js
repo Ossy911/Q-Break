@@ -209,6 +209,30 @@ class GameScene extends Phaser.Scene {
         graphics.strokeRect(0, 0, 64, 64);
         graphics.generateTexture('grid-tile', 64, 64);
         graphics.clear();
+
+        // Power-Up: Shield (Cyan)
+        graphics.lineStyle(2, 0x00f2ff);
+        graphics.strokeCircle(10, 10, 8);
+        graphics.fillStyle(0x00f2ff, 0.4);
+        graphics.fillCircle(10, 10, 4);
+        graphics.generateTexture('powerup-shield', 20, 20);
+        graphics.clear();
+
+        // Power-Up: Speed (Green)
+        graphics.lineStyle(2, 0x39ff14);
+        graphics.strokeRect(2, 2, 16, 16);
+        graphics.fillStyle(0x39ff14, 0.4);
+        graphics.fillRect(6, 6, 8, 8);
+        graphics.generateTexture('powerup-speed', 20, 20);
+        graphics.clear();
+
+        // Power-Up: Charge (Magenta)
+        graphics.lineStyle(2, 0xff00ff);
+        graphics.strokeCircle(10, 10, 8);
+        graphics.fillStyle(0xff00ff, 0.4);
+        graphics.fillRect(7, 7, 6, 6);
+        graphics.generateTexture('powerup-charge', 20, 20);
+        graphics.clear();
     }
 
     createBackgroundGrid() {
