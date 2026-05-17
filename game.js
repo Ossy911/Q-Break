@@ -604,6 +604,11 @@ class GameScene extends Phaser.Scene {
                 this.cameras.main.shake(200, 0.015);
             }
             
+            // Trigger premium impact hit-stop freeze on major brute kills
+            if (enemy.enemyType === 'brute') {
+                this.triggerHitStop(80);
+            }
+            
             if (enemy.trailEmitter) enemy.trailEmitter.destroy();
             enemy.destroy();
             this.enemiesDefeatedInWave++;
@@ -722,6 +727,15 @@ class GameScene extends Phaser.Scene {
         } else {
             entropyFill.classList.remove('critical');
         }
+    }
+
+    triggerHitStop(duration) {
+        this.physics.world.pause();
+        setTimeout(() => {
+            if (!this.isGameOver) {
+                this.physics.world.resume();
+            }
+        }, duration);
     }
 
     showMessage(text) {
