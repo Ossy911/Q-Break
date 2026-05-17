@@ -6,11 +6,12 @@
 class AudioController {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.enabled = true;
+        this.enabled = localStorage.getItem('qbreak_sfx_enabled') !== 'false';
     }
 
     toggleMute() {
         this.enabled = !this.enabled;
+        localStorage.setItem('qbreak_sfx_enabled', this.enabled);
         if (this.ctx.state === 'suspended') this.ctx.resume();
         return this.enabled;
     }

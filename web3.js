@@ -80,8 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Audio Mute Toggle
+    // Audio Mute Toggle with cache restoration
     if (audioBtn) {
+        const initialSfx = localStorage.getItem('qbreak_sfx_enabled') !== 'false';
+        audioBtn.textContent = initialSfx ? '🔊' : '🔇';
+
         audioBtn.addEventListener('click', () => {
             if (window.gameAudio) {
                 const enabled = window.gameAudio.toggleMute();
