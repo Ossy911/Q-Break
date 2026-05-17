@@ -87,6 +87,21 @@ class AudioController {
         this.playTone(200, 'sawtooth', 0.25, 0.08);
         setTimeout(() => this.playTone(150, 'sawtooth', 0.25, 0.08), 120);
     }
+
+    playDashSwoosh() {
+        if (!this.enabled || this.ctx.state === 'suspended') return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1500, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
 }
 const gameAudio = new AudioController();
 
