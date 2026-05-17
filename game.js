@@ -108,6 +108,9 @@ class GameScene extends Phaser.Scene {
         this.quantumCharges = 3;
         this.isGameOver = false;
         this.difficultyTimer = 0;
+        this.currentWave = 1;
+        this.enemiesDefeatedInWave = 0;
+        this.isWaveTransitioning = false;
     }
 
     preload() {
