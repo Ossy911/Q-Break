@@ -519,6 +519,23 @@ class GameScene extends Phaser.Scene {
         vault.progress = 0;
         vault.overlay = this.add.circle(x, y, 40, 0x00f2ff, 0.2);
         
+        // Pop glowing burst particles when initializing the vault
+        for (let i = 0; i < 20; i++) {
+            const p = this.add.circle(x, y, 3, 0x00f2ff);
+            this.physics.add.existing(p);
+            p.body.setVelocity(
+                Phaser.Math.Between(-150, 150),
+                Phaser.Math.Between(-150, 150)
+            );
+            this.tweens.add({
+                targets: p,
+                alpha: 0,
+                scale: 0.5,
+                duration: 600,
+                onComplete: () => p.destroy()
+            });
+        }
+        
         // UI Notification
         this.showMessage("VAULT INITIALIZED: DEFEND AREA");
     }
