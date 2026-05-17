@@ -31,6 +31,33 @@ class AudioController {
     playQuantumShoot() {
         this.playTone(220, 'sawtooth', 0.3, 0.08); // Lower, thicker
     }
+
+    playExplosion() {
+        if (!this.enabled || this.ctx.state === 'suspended') return;
+        const bufferSize = this.ctx.sampleRate * 0.5; // 0.5 seconds
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1; // White noise
+        }
+        
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const gain = this.ctx.createGain();
+        
+        // Lowpass filter to make it sound like a muffled boom
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 1000;
+        
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+    }
 }
 const gameAudio = new AudioController();
 
@@ -481,6 +508,7 @@ class GameScene extends Phaser.Scene {
     }
 
     createExplosion(x, y, color) {
+        gameAudio.playExplosion();
         for (let i = 0; i < 10; i++) {
             const p = this.add.circle(x, y, 2, color);
             this.physics.add.existing(p);
