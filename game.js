@@ -69,6 +69,12 @@ class AudioController {
         setTimeout(() => this.playTone(554, 'sine', 0.1, 0.1), 100);
         setTimeout(() => this.playTone(659, 'sine', 0.2, 0.1), 200);
     }
+
+    playPlayerHit() {
+        // Dissonant low frequency
+        this.playTone(150, 'sawtooth', 0.4, 0.2);
+        setTimeout(() => this.playTone(130, 'square', 0.4, 0.2), 50);
+    }
 }
 const gameAudio = new AudioController();
 
@@ -515,6 +521,7 @@ class GameScene extends Phaser.Scene {
     }
 
     hitPlayer(player, enemy) {
+        gameAudio.playPlayerHit();
         this.entropy += 5;
         this.createExplosion(enemy.x, enemy.y, 0xff0000);
         enemy.destroy();
