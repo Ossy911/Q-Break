@@ -458,7 +458,8 @@ class GameScene extends Phaser.Scene {
 
         const rand = Math.random();
         let type = 'swarm';
-        if (rand > 0.9) type = 'brute';
+        // Brutes restricted to Wave 2+
+        if (rand > 0.9 && this.currentWave >= 2) type = 'brute';
         else if (rand > 0.7) type = 'satoshi';
 
         const enemy = this.enemies.create(x, y, `enemy-${type}`);
