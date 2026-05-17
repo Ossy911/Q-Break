@@ -123,6 +123,11 @@ class GameScene extends Phaser.Scene {
         this.currentWave = 1;
         this.enemiesDefeatedInWave = 0;
         this.isWaveTransitioning = false;
+
+        // Power-Up State Variables
+        this.isShieldActive = false;
+        this.shieldBubble = null;
+        this.isSpeedActive = false;
     }
 
     preload() {
@@ -398,6 +403,12 @@ class GameScene extends Phaser.Scene {
         const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, pointer.x, pointer.y);
         this.player.setRotation(angle);
 
+        // Keep shield bubble following the player
+        if (this.isShieldActive && this.shieldBubble) {
+            this.shieldBubble.x = this.player.x;
+            this.shieldBubble.y = this.player.y;
+        }
+
         // Enemy AI
         this.enemies.getChildren().forEach(enemy => {
             this.physics.moveToObject(enemy, this.player, enemy.speed || 100);
@@ -416,7 +427,7 @@ class GameScene extends Phaser.Scene {
     }
 
     handleMovement() {
-        const speed = 300;
+        const speed = this.isSpeedActive ? 450 : 300;
         
         // Keyboard
         let vx = 0;
@@ -584,6 +595,63 @@ class GameScene extends Phaser.Scene {
         });
     }
 
+    collectPowerUp(player, powerup) {
+        const type = powerup.powerupType;
+        
+        // Play dynamic screen flash depending on type
+        const flashColor = type === 'shield' ? 0x00f2ff : (type === 'speed' ? 0x39ff14 : 0xff00ff);
+        this.cameras.main.flash(150, (flashColor >> 16) & 255, (flashColor >> 8) & 255, flashColor & 255, 0.15);
+
+        if (type === 'shield') {
+            if (this.isShieldActive) {
+                if (this.shieldBubble) this.shieldBubble.destroy();
+            }
+            this.isShieldActive = true;
+            this.shieldBubble = this.add.circle(this.player.x, this.player.y, 22, 0x00f2ff, 0.2);
+            this.shieldBubble.setStrokeStyle(2, 0x00f2ff, 0.8);
+            this.shieldBubble.setDepth(11);
+        } else if (type === 'speed') {
+            this.isSpeedActive = true;
+            this.player.setMaxVelocity(450);
+            this.trailParticles.setConfig({
+                speed: 0,
+                scale: { start: 0.8, end: 0 },
+                alpha: { start: 0.4, end: 0 },
+                lifespan: 300,
+                blendMode: 'ADD',
+                frequency: 30,
+                follow: this.player,
+                tint: 0x39ff14
+            });
+            
+            // Speed lasts 6 seconds
+            this.time.delayedCall(6000, () => {
+                this.isSpeedActive = false;
+                if (!this.isGameOver && this.player && this.player.active) {
+                    this.player.setMaxVelocity(300);
+                    this.trailParticles.setConfig({
+                        speed: 0,
+                        scale: { start: 0.8, end: 0 },
+                        alpha: { start: 0.3, end: 0 },
+                        lifespan: 300,
+                        blendMode: 'ADD',
+                        frequency: 50,
+                        follow: this.player
+                    });
+                    gameAudio.playPowerUpExpire();
+                    this.showMessage("SPEED OVERDRIVE EXPIRED");
+                }
+            });
+        } else if (type === 'charge') {
+            this.quantumCharges = Math.min(5, this.quantumCharges + 3);
+            this.updateUI();
+        }
+
+        powerup.destroy();
+        gameAudio.playPowerUpCollect();
+        this.showMessage(`${type.toUpperCase()} OVERDRIVE ACTIVATED`);
+    }
+
     collectData(player, db) {
         db.destroy();
         this.initVault(db.x, db.y);
@@ -748,6 +816,24 @@ class GameScene extends Phaser.Scene {
     }
 
     hitPlayer(player, enemy) {
+        if (this.isShieldActive) {
+            // Absorb damage entirely
+            this.isShieldActive = false;
+            if (this.shieldBubble) {
+                this.shieldBubble.destroy();
+                this.shieldBubble = null;
+            }
+            this.createExplosion(enemy.x, enemy.y, 0x00f2ff);
+            if (enemy.trailEmitter) enemy.trailEmitter.destroy();
+            enemy.destroy();
+            
+            // Audio synth for shield deflecting
+            gameAudio.playTone(880, 'sine', 0.15, 0.15);
+            this.cameras.main.flash(100, 0, 242, 255, 0.15);
+            this.showMessage("SHIELD ABSORBED SECURITY BREACH");
+            return;
+        }
+
         gameAudio.playPlayerHit();
         const damage = enemy.enemyType === 'brute' ? 15 : 5;
         this.entropy += damage;
