@@ -138,26 +138,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    connectBtn.addEventListener('click', async () => {
-        connectBtn.textContent = 'CONNECTING...';
-        connectBtn.disabled = true;
-        if (guestBtn) guestBtn.style.display = 'none';
-        
-        const account = await window.quip.connect();
-        
-        walletStatus.innerHTML = `
-            <div class="account-card">
-                <span class="label">SECURE ACCOUNT ACTIVE</span>
-                <span class="value">${account.address}</span>
-            </div>
-        `;
-        
-        if (dailyBtn) dailyBtn.classList.remove('hidden');
-        startBtn.classList.remove('hidden');
-    });
+    // Event delegation on walletStatus container (immune to dynamic innerHTML replacements!)
+    walletStatus.addEventListener('click', async (e) => {
+        const target = e.target;
+        if (!target) return;
 
-    if (guestBtn) {
-        guestBtn.addEventListener('click', () => {
+        // 1. Connect Button Click
+        if (target.id === 'connect-wallet-btn') {
+            target.textContent = 'CONNECTING...';
+            target.disabled = true;
+            
+            const account = await window.quip.connect();
+            
+            walletStatus.innerHTML = `
+                <div class="account-card">
+                    <span class="label">SECURE ACCOUNT ACTIVE</span>
+                    <span class="value">${account.address}</span>
+                    <button id="disconnect-wallet-btn" class="secondary-btn" style="padding: 0.3rem 1rem; font-size: 0.75rem; border-color: var(--magenta); color: var(--magenta); margin-top: 0.5rem; text-shadow: 0 0 10px rgba(255,0,255,0.2);">DISCONNECT</button>
+                </div>
+            `;
+            
+            if (dailyBtn) dailyBtn.classList.remove('hidden');
+            startBtn.classList.remove('hidden');
+        }
+
+        // 2. Play as Guest Button Click
+        if (target.id === 'guest-btn') {
             window.quip.isConnected = false;
             window.quip.isGuest = true;
             window.quip.account = {
@@ -170,12 +176,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="account-card">
                     <span class="label" style="color: var(--magenta); text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);">GUEST SESSION ACTIVE</span>
                     <span class="value">UNREGISTERED_OPERATOR</span>
+                    <button id="disconnect-wallet-btn" class="secondary-btn" style="padding: 0.3rem 1rem; font-size: 0.75rem; border-color: var(--magenta); color: var(--magenta); margin-top: 0.5rem; text-shadow: 0 0 10px rgba(255,0,255,0.2);">DISCONNECT</button>
                 </div>
             `;
             
             startBtn.classList.remove('hidden');
-            connectBtn.style.display = 'none';
-            guestBtn.style.display = 'none';
-        });
-    }
+        }
+
+        // 3. Disconnect Button Click
+        if (target.id === 'disconnect-wallet-btn') {
+            window.quip.isConnected = false;
+            window.quip.isGuest = false;
+            window.quip.account = null;
+            
+            // Restore Connect / Guest standard buttons
+            walletStatus.innerHTML = `
+                <button id="connect-wallet-btn" class="primary-btn">CONNECT QUIP ACCOUNT</button>
+                <button id="guest-btn" class="secondary-btn" style="margin-top: 0.5rem;">PLAY AS GUEST</button>
+            `;
+            
+            // Hide Start and Daily buttons
+            startBtn.classList.add('hidden');
+            if (dailyBtn) dailyBtn.classList.add('hidden');
+        }
+    });
 });
