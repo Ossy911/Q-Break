@@ -475,6 +475,19 @@ class GameScene extends Phaser.Scene {
                 callback: () => enemy.setAlpha(Math.random()),
                 loop: true
             });
+        } else if (type === 'brute') {
+            // Subtle glowing purple trail for Brute
+            const trail = this.add.particles(0, 0, 'enemy-brute', {
+                speed: 0,
+                scale: { start: 0.6, end: 0 },
+                alpha: { start: 0.2, end: 0 },
+                lifespan: 400,
+                blendMode: 'ADD',
+                frequency: 80,
+                follow: enemy
+            });
+            trail.setDepth(7);
+            enemy.trailEmitter = trail;
         }
     }
 
@@ -574,6 +587,7 @@ class GameScene extends Phaser.Scene {
                 this.cameras.main.shake(200, 0.015);
             }
             
+            if (enemy.trailEmitter) enemy.trailEmitter.destroy();
             enemy.destroy();
             this.enemiesDefeatedInWave++;
             this.checkWaveProgress();
@@ -640,6 +654,7 @@ class GameScene extends Phaser.Scene {
         const damage = enemy.enemyType === 'brute' ? 15 : 5;
         this.entropy += damage;
         this.createExplosion(enemy.x, enemy.y, 0xff0000);
+        if (enemy.trailEmitter) enemy.trailEmitter.destroy();
         enemy.destroy();
         
         // Dynamic camera shake depending on impact
