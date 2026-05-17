@@ -143,6 +143,12 @@ class GameScene extends Phaser.Scene {
         this.isShieldActive = false;
         this.shieldBubble = null;
         this.isSpeedActive = false;
+
+        // Dash Ability State
+        this.isDashing = false;
+        this.lastDashTime = 0;
+        this.dashCooldown = 3000;
+        this.dashDuration = 180;
     }
 
     preload() {
@@ -323,7 +329,7 @@ class GameScene extends Phaser.Scene {
     }
 
     setupInput() {
-        this.keys = this.input.keyboard.addKeys('W,A,S,D,ONE,TWO,SPACE');
+        this.keys = this.input.keyboard.addKeys('W,A,S,D,ONE,TWO,SPACE,SHIFT');
         this.input.on('pointerdown', (pointer) => {
             // Only fire if not touching the joystick or action button
             if (pointer.x > 200 || pointer.y < CONFIG.height - 200) {
@@ -439,9 +445,37 @@ class GameScene extends Phaser.Scene {
                 }
             }
         });
+
+        // Update Dash Cooldown countdown HUD text smoothly
+        const timeSinceDash = time - this.lastDashTime;
+        if (timeSinceDash < this.dashCooldown) {
+            const dashVal = document.getElementById('dash-value');
+            if (dashVal) {
+                const remaining = ((this.dashCooldown - timeSinceDash) / 1000).toFixed(1);
+                dashVal.textContent = `${remaining}S`;
+                dashVal.style.color = 'var(--magenta)';
+                dashVal.style.textShadow = '0 0 10px rgba(255, 0, 255, 0.5)';
+            }
+        } else {
+            const dashVal = document.getElementById('dash-value');
+            if (dashVal && dashVal.textContent !== 'READY') {
+                dashVal.textContent = 'READY';
+                dashVal.style.color = 'var(--cyan)';
+                dashVal.style.textShadow = '0 0 10px rgba(0, 242, 255, 0.5)';
+            }
+        }
     }
 
     handleMovement() {
+        if (this.isDashing) return;
+
+        // Shift Key to Dash
+        const time = this.time.now;
+        if (this.keys.SHIFT.isDown && time - this.lastDashTime > this.dashCooldown) {
+            this.triggerDash(time);
+            return;
+        }
+
         const speed = this.isSpeedActive ? 450 : 300;
         
         // Keyboard
@@ -467,6 +501,78 @@ class GameScene extends Phaser.Scene {
             this.player.setAccelerationX(0);
             this.player.setAccelerationY(0);
         }
+    }
+
+    triggerDash(time) {
+        this.isDashing = true;
+        this.lastDashTime = time;
+        
+        let vx = 0;
+        let vy = 0;
+        if (this.keys.W.isDown) vy = -1;
+        else if (this.keys.S.isDown) vy = 1;
+        if (this.keys.A.isDown) vx = -1;
+        else if (this.keys.D.isDown) vx = 1;
+        
+        // If no keys held, dash towards the mouse pointer direction!
+        if (vx === 0 && vy === 0) {
+            const pointer = this.input.activePointer;
+            const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, pointer.x, pointer.y);
+            vx = Math.cos(angle);
+            vy = Math.sin(angle);
+        } else {
+            // Normalize keyboard direction
+            const len = Math.sqrt(vx*vx + vy*vy);
+            vx /= len;
+            vy /= len;
+        }
+        
+        // Boost velocity instantly
+        const dashSpeed = 1200;
+        this.player.setVelocity(vx * dashSpeed, vy * dashSpeed);
+        this.player.setAcceleration(0, 0); // Disable acceleration during active dash
+        
+        // High density visual cyan particles trail
+        this.trailParticles.setConfig({
+            speed: 0,
+            scale: { start: 1.0, end: 0 },
+            alpha: { start: 0.6, end: 0 },
+            lifespan: 400,
+            blendMode: 'ADD',
+            frequency: 15,
+            follow: this.player,
+            tint: 0x00f2ff
+        });
+        
+        gameAudio.playDashSwoosh();
+        
+        // End dash after 180ms
+        this.time.delayedCall(180, () => {
+            this.isDashing = false;
+            // Restore appropriate trail particles configuration
+            if (this.isSpeedActive) {
+                this.trailParticles.setConfig({
+                    speed: 0,
+                    scale: { start: 0.8, end: 0 },
+                    alpha: { start: 0.4, end: 0 },
+                    lifespan: 300,
+                    blendMode: 'ADD',
+                    frequency: 30,
+                    follow: this.player,
+                    tint: 0x39ff14
+                });
+            } else {
+                this.trailParticles.setConfig({
+                    speed: 0,
+                    scale: { start: 0.8, end: 0 },
+                    alpha: { start: 0.3, end: 0 },
+                    lifespan: 300,
+                    blendMode: 'ADD',
+                    frequency: 50,
+                    follow: this.player
+                });
+            }
+        });
     }
 
     handleWeaponSwitch() {
