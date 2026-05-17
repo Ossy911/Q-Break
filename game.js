@@ -75,6 +75,18 @@ class AudioController {
         this.playTone(150, 'sawtooth', 0.4, 0.2);
         setTimeout(() => this.playTone(130, 'square', 0.4, 0.2), 50);
     }
+
+    playPowerUpCollect() {
+        setTimeout(() => this.playTone(523.25, 'sine', 0.15, 0.1), 0); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.15, 0.1), 80); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.15, 0.1), 160); // G5
+        setTimeout(() => this.playTone(1046.5, 'sine', 0.3, 0.1), 240); // C6
+    }
+
+    playPowerUpExpire() {
+        this.playTone(200, 'sawtooth', 0.25, 0.08);
+        setTimeout(() => this.playTone(150, 'sawtooth', 0.25, 0.08), 120);
+    }
 }
 const gameAudio = new AudioController();
 
