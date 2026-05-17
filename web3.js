@@ -277,4 +277,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dailyBtn) dailyBtn.classList.add('hidden');
         }
     });
+
+    // Neon Cursor Dust Trail Generator (Active only in start screen menu)
+    document.addEventListener('mousemove', (e) => {
+        const menuScreen = document.getElementById('menu-screen');
+        if (!menuScreen || menuScreen.classList.contains('hidden')) return;
+
+        // Throttle to 20% to avoid DOM pollution and keep it high-performance
+        if (Math.random() > 0.2) return;
+
+        const p = document.createElement('div');
+        p.style.position = 'fixed';
+        p.style.left = `${e.clientX}px`;
+        p.style.top = `${e.clientY}px`;
+        p.style.width = '4px';
+        p.style.height = '4px';
+        p.style.borderRadius = '50%';
+        p.style.pointerEvents = 'none';
+        p.style.zIndex = '999999';
+        
+        const color = Math.random() > 0.5 ? 'var(--cyan)' : 'var(--magenta)';
+        p.style.background = color;
+        p.style.boxShadow = `0 0 8px ${color}`;
+        p.style.transform = 'translate(-50%, -50%)';
+        
+        const dx = (Math.random() - 0.5) * 20;
+        const dy = 5 + Math.random() * 15; // Slow drift down
+
+        p.animate([
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.8 },
+            { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.1)`, opacity: 0 }
+        ], {
+            duration: 650,
+            easing: 'ease-out',
+            fill: 'forwards'
+        });
+
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 700);
+    });
 });

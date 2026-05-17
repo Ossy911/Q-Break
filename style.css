@@ -20,9 +20,10 @@
 body {
     background-color: var(--bg-dark);
     background-image: 
+        radial-gradient(circle at center, rgba(122, 0, 255, 0.08) 0%, rgba(10, 10, 15, 0.95) 80%),
         linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+    background-size: 100% 100%, 50px 50px, 50px 50px;
     background-position: center;
     color: var(--white);
     font-family: var(--font-main);
@@ -67,11 +68,20 @@ body {
     pointer-events: none !important;
 }
 
-/* Header UI */
+/* Header UI Cockpit Hud Panel */
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    background: rgba(8, 8, 12, 0.45);
+    border: 1px solid rgba(0, 242, 255, 0.15);
+    padding: 1.2rem 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 242, 255, 0.05);
+    width: 100%;
+    backdrop-filter: blur(12px);
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--cyan);
 }
 
 .entropy-container {
@@ -214,52 +224,140 @@ body {
 }
 
 .glitch {
-    font-size: 5rem;
+    font-size: 5.5rem;
     font-weight: 900;
-    letter-spacing: 0.5rem;
+    letter-spacing: 0.6rem;
     position: relative;
     color: var(--white);
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: none;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--cyan);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--magenta), 0 0 20px var(--magenta);
+    clip: rect(85px, 450px, 140px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(31px, 9999px, 94px, 0); }
+    10% { clip: rect(112px, 9999px, 76px, 0); }
+    20% { clip: rect(85px, 9999px, 5px, 0); }
+    30% { clip: rect(27px, 9999px, 115px, 0); }
+    40% { clip: rect(73px, 9999px, 29px, 0); }
+    50% { clip: rect(118px, 9999px, 142px, 0); }
+    60% { clip: rect(9px, 9999px, 83px, 0); }
+    70% { clip: rect(104px, 9999px, 55px, 0); }
+    80% { clip: rect(51px, 9999px, 120px, 0); }
+    90% { clip: rect(135px, 9999px, 42px, 0); }
+    100% { clip: rect(62px, 9999px, 98px, 0); }
+}
+
+@keyframes glitch-anim2 {
+    0% { clip: rect(76px, 9999px, 116px, 0); }
+    11% { clip: rect(28px, 9999px, 135px, 0); }
+    22% { clip: rect(102px, 9999px, 54px, 0); }
+    33% { clip: rect(9px, 9999px, 81px, 0); }
+    44% { clip: rect(85px, 9999px, 119px, 0); }
+    55% { clip: rect(43px, 9999px, 8px, 0); }
+    66% { clip: rect(122px, 9999px, 64px, 0); }
+    77% { clip: rect(19px, 9999px, 105px, 0); }
+    88% { clip: rect(114px, 9999px, 32px, 0); }
+    100% { clip: rect(53px, 9999px, 92px, 0); }
 }
 
 .subtitle {
-    letter-spacing: 0.8rem;
+    letter-spacing: 0.95rem;
     color: var(--cyan);
-    font-weight: 300;
+    font-weight: 400;
     margin-top: -1rem;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+    text-transform: uppercase;
 }
 
 .primary-btn, .secondary-btn {
     pointer-events: all;
-    background: transparent;
+    background: rgba(0, 242, 255, 0.02);
     border: 1px solid var(--cyan);
     color: var(--cyan);
-    padding: 1rem 3rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.2rem;
+    padding: 1.1rem 3.2rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.25rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     margin: 1rem;
     font-family: var(--font-main);
     text-transform: uppercase;
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.05);
+    text-shadow: 0 0 5px rgba(0, 242, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.primary-btn::before, .secondary-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: all 0.6s ease;
+}
+
+.primary-btn:hover::before, .secondary-btn:hover::before {
+    left: 100%;
 }
 
 .primary-btn:hover {
     background: var(--cyan);
     color: var(--bg-dark);
-    box-shadow: 0 0 30px var(--cyan);
+    box-shadow: 0 0 35px var(--cyan), inset 0 0 15px rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px) scale(1.03);
+    text-shadow: none;
+}
+
+.primary-btn:active, .secondary-btn:active {
+    transform: translateY(-1px) scale(0.97);
+    filter: brightness(0.9);
 }
 
 .secondary-btn {
     border-color: var(--magenta);
     color: var(--magenta);
+    background: rgba(255, 0, 255, 0.02);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.05);
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.2);
 }
 
 .secondary-btn:hover {
     background: var(--magenta);
     color: var(--bg-dark);
-    box-shadow: 0 0 30px var(--magenta);
+    box-shadow: 0 0 35px var(--magenta), inset 0 0 15px rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px) scale(1.03);
+    text-shadow: none;
 }
 
 .instructions {
