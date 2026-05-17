@@ -1165,6 +1165,17 @@ document.getElementById('restart-btn').addEventListener('click', () => {
     window.location.reload();
 });
 
+// Global hotkey listener for instant retry [R]
+window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'r') {
+        const gameOverScreen = document.getElementById('game-over-screen');
+        if (gameOverScreen && !gameOverScreen.classList.contains('hidden')) {
+            if (window.gameAudio) window.gameAudio.playUIBlip();
+            window.location.reload();
+        }
+    }
+});
+
 document.getElementById('commit-score-btn').addEventListener('click', async () => {
     const btn = document.getElementById('commit-score-btn');
     btn.textContent = 'COMMITTING...';
