@@ -1066,8 +1066,59 @@ class GameScene extends Phaser.Scene {
             commitBtn.style.opacity = '1';
             commitBtn.style.cursor = 'pointer';
         }
+
+        // Leaderboard Update Logic
+        this.updateLeaderboard();
     }
-}
+
+    updateLeaderboard() {
+        const scoresKey = 'qbreak_highscores';
+        let scores = [];
+        try {
+            const raw = localStorage.getItem(scoresKey);
+            if (raw) scores = JSON.parse(raw);
+        } catch (e) {
+            scores = [];
+        }
+
+        // Add current score
+        scores.push({
+            score: this.score,
+            vaults: this.vaultsSecured,
+            date: new Date().toLocaleDateString()
+        });
+
+        // Sort descending, cap to top 5
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 5);
+
+        // Persist
+        localStorage.setItem(scoresKey, JSON.stringify(scores));
+
+        // Render Rows
+        const listContainer = document.getElementById('leaderboard-list');
+        if (listContainer) {
+            listContainer.innerHTML = '';
+            scores.forEach((entry, idx) => {
+                const row = document.createElement('div');
+                row.className = 'leaderboard-row';
+                
+                // Bold highlight current score in highscore list!
+                const isCurrent = (entry.score === this.score && entry.vaults === this.vaultsSecured);
+                if (isCurrent) {
+                    row.style.background = 'rgba(0, 242, 255, 0.15)';
+                    row.style.border = '1px solid rgba(0, 242, 255, 0.3)';
+                }
+
+                row.innerHTML = `
+                    <span class="leaderboard-rank">#${idx + 1}</span>
+                    <span class="leaderboard-score">${entry.score.toString().padStart(6, '0')}</span>
+                    <span class="leaderboard-vaults">${entry.vaults} VAULTS</span>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+    }
 
 // Initialization
 let game;

@@ -406,3 +406,65 @@ body {
     box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
     transform: translateY(-2px);
 }
+
+/* Leaderboard Layout */
+.leaderboard-container {
+    margin: 1.2rem 0;
+    width: 100%;
+    max-width: 420px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.leaderboard-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    color: var(--cyan);
+    text-align: center;
+    margin: 0 0 0.8rem 0;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.leaderboard-row:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-rank {
+    color: var(--magenta);
+    font-weight: bold;
+    width: 25px;
+}
+
+.leaderboard-score {
+    color: var(--white);
+    font-family: monospace;
+    flex-grow: 1;
+    text-align: right;
+    margin-right: 1.5rem;
+}
+
+.leaderboard-vaults {
+    color: var(--cyan);
+    font-size: 0.8rem;
+}
