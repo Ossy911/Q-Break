@@ -680,6 +680,14 @@ class GameScene extends Phaser.Scene {
         if (enemy.trailEmitter) enemy.trailEmitter.destroy();
         enemy.destroy();
         
+        // Player visual damage flash
+        this.player.setTint(0xff0000);
+        this.time.delayedCall(150, () => {
+            if (this.player && this.player.active) {
+                this.player.clearTint();
+            }
+        });
+        
         // Dynamic camera shake depending on impact
         const shakeDuration = enemy.enemyType === 'brute' ? 300 : 150;
         const shakeIntensity = enemy.enemyType === 'brute' ? 0.03 : 0.01;
