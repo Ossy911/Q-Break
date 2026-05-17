@@ -62,6 +62,13 @@ class AudioController {
     playUIBlip() {
         this.playTone(600, 'sine', 0.05, 0.1);
     }
+
+    playVaultSecured() {
+        // Major chord arpeggio
+        setTimeout(() => this.playTone(440, 'sine', 0.1, 0.1), 0);
+        setTimeout(() => this.playTone(554, 'sine', 0.1, 0.1), 100);
+        setTimeout(() => this.playTone(659, 'sine', 0.2, 0.1), 200);
+    }
 }
 const gameAudio = new AudioController();
 
@@ -466,6 +473,7 @@ class GameScene extends Phaser.Scene {
     completeVault(vault) {
         vault.status = 'claimed';
         vault.overlay.destroy();
+        gameAudio.playVaultSecured();
         
         // Visual Pop
         const fx = this.add.circle(vault.x, vault.y, 40, 0x00f2ff, 1);
