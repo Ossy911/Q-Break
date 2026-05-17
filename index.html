@@ -72,6 +72,7 @@
     <!-- Start/Menu Screen -->
     <div id="menu-screen" class="overlay-screen">
         <div class="menu-settings">
+            <button id="instructions-toggle-btn" class="icon-btn" title="Game Intel">📂</button>
             <button id="audio-toggle-btn" class="icon-btn" title="Toggle Sound">🔊</button>
         </div>
         <div class="logo-container">
@@ -88,6 +89,32 @@
         </div>
         <div class="instructions">
             <p>WASD to Move • MOUSE to Aim & Shoot • SPACE for QUIP Vaults</p>
+        </div>
+    </div>
+
+    <!-- Instructions / Intel Modal Overlay -->
+    <div id="instructions-modal" class="overlay-screen hidden" style="z-index: 200;">
+        <div class="account-card" style="max-width: 550px; text-align: left; align-items: stretch; gap: 1.2rem; padding: 2rem;">
+            <h2 style="color: var(--cyan); text-align: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; margin-top: 0; text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);">SECOPS OPERATIONAL INTEL</h2>
+            <div class="intel-section">
+                <h3 style="color: var(--magenta); margin: 0 0 0.5rem 0; font-size: 1.1rem; text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);">🕹️ TACTICAL LOCOMOTION</h3>
+                <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.7; font-size: 0.95rem;">
+                    <li><b style="color: var(--cyan);">WASD / Joystick:</b> Move and accelerate</li>
+                    <li><b style="color: var(--cyan);">MOUSE / Touch Drag:</b> Aim crosshair</li>
+                    <li><b style="color: var(--cyan);">LEFT CLICK:</b> Fire active blaster</li>
+                    <li><b style="color: var(--cyan);">LEFT SHIFT:</b> Breach Dash (Rapid Surge & Dodge)</li>
+                    <li><b style="color: var(--cyan);">SPACEBAR:</b> Deploy Vault Approval Locks</li>
+                    <li><b style="color: var(--cyan);">KEY 1:</b> Equip Classical Blaster (Standard threats)</li>
+                    <li><b style="color: var(--cyan);">KEY 2:</b> Equip Quantum Blaster (Brute threats)</li>
+                </ul>
+            </div>
+            <div class="intel-section" style="border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                <h3 style="color: var(--magenta); margin: 0 0 0.5rem 0; font-size: 1.1rem; text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);">🔋 SECURE FLOW INTEGRITY</h3>
+                <p style="margin: 0; line-height: 1.5; font-size: 0.9rem; color: #a0a0b0;">
+                    Quantum blasters drain ammo. Deploy QUIP approvals inside containment vaults to purge system Entropy and instantly replenish +2 blasters capacity!
+                </p>
+            </div>
+            <button id="close-modal-btn" class="secondary-btn" style="align-self: center; margin-top: 1rem;">ACKNOWLEDGE OPERATIONAL INTEL</button>
         </div>
     </div>
 

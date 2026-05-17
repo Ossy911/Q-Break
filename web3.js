@@ -62,6 +62,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const walletStatus = document.getElementById('wallet-status');
     const audioBtn = document.getElementById('audio-toggle-btn');
 
+    const intelBtn = document.getElementById('instructions-toggle-btn');
+    const intelModal = document.getElementById('instructions-modal');
+    const closeIntelBtn = document.getElementById('close-modal-btn');
+
+    if (intelBtn && intelModal) {
+        intelBtn.addEventListener('click', () => {
+            intelModal.classList.remove('hidden');
+            if (window.gameAudio) window.gameAudio.playUIBlip();
+        });
+    }
+
+    if (closeIntelBtn && intelModal) {
+        closeIntelBtn.addEventListener('click', () => {
+            intelModal.classList.add('hidden');
+            if (window.gameAudio) window.gameAudio.playUIBlip();
+        });
+    }
+
     // Audio Mute Toggle
     if (audioBtn) {
         audioBtn.addEventListener('click', () => {
