@@ -98,10 +98,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, true);
 
-    // Click UI sound
+    // Dynamic Cyber CSS Click Burst Particles Helper
+    function createClickBurst(x, y) {
+        const burstContainer = document.createElement('div');
+        burstContainer.style.position = 'fixed';
+        burstContainer.style.top = '0';
+        burstContainer.style.left = '0';
+        burstContainer.style.width = '100vw';
+        burstContainer.style.height = '100vh';
+        burstContainer.style.pointerEvents = 'none';
+        burstContainer.style.zIndex = '9999';
+        document.body.appendChild(burstContainer);
+
+        for (let i = 0; i < 12; i++) {
+            const p = document.createElement('div');
+            p.style.position = 'absolute';
+            p.style.left = `${x}px`;
+            p.style.top = `${y}px`;
+            p.style.width = '6px';
+            p.style.height = '6px';
+            p.style.borderRadius = '50%';
+            const color = Math.random() > 0.5 ? 'var(--cyan)' : 'var(--magenta)';
+            p.style.background = color;
+            p.style.boxShadow = `0 0 8px ${color}`;
+            p.style.transform = 'translate(-50%, -50%)';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 25 + Math.random() * 45;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance;
+
+            p.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.2)`, opacity: 0 }
+            ], {
+                duration: 550,
+                easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
+                fill: 'forwards'
+            });
+
+            burstContainer.appendChild(p);
+        }
+
+        setTimeout(() => burstContainer.remove(), 600);
+    }
+
+    // Click UI sound and dynamic click burst injection
     document.body.addEventListener('click', (e) => {
-        if (e.target && e.target.tagName === 'BUTTON' && window.gameAudio && e.target.id !== 'audio-toggle-btn') {
-            window.gameAudio.playUIBlip();
+        if (e.target && e.target.tagName === 'BUTTON') {
+            createClickBurst(e.clientX, e.clientY);
+            if (window.gameAudio && e.target.id !== 'audio-toggle-btn') {
+                window.gameAudio.playUIBlip();
+            }
         }
     }, true);
 
