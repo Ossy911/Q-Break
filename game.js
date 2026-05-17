@@ -203,17 +203,23 @@ class GameScene extends Phaser.Scene {
         graphics.strokeCircle(48, 48, 40);
         graphics.generateTexture('vault-base', 96, 96);
         graphics.clear();
+
+        // Scrolling Grid Tile Texture
+        graphics.lineStyle(1, 0x00f2ff, 0.15);
+        graphics.strokeRect(0, 0, 64, 64);
+        graphics.generateTexture('grid-tile', 64, 64);
+        graphics.clear();
     }
 
     createBackgroundGrid() {
-        const grid = this.add.grid(
+        this.bgGrid = this.add.tileSprite(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2,
             this.cameras.main.width,
             this.cameras.main.height,
-            64, 64, 0x000000, 0, 0x00f2ff, 0.05
+            'grid-tile'
         );
-        grid.setDepth(-1);
+        this.bgGrid.setDepth(-1);
     }
 
     setupWorld() {
@@ -312,6 +318,18 @@ class GameScene extends Phaser.Scene {
 
     update(time, delta) {
         if (this.isGameOver) return;
+
+        // Scroll background cyber-grid dynamically
+        if (this.bgGrid) {
+            this.bgGrid.tilePositionX = time * 0.05;
+            this.bgGrid.tilePositionY = time * 0.05;
+            
+            // Add parallax drag based on player physics
+            if (this.player && this.player.body) {
+                this.bgGrid.tilePositionX += this.player.body.velocity.x * 0.003;
+                this.bgGrid.tilePositionY += this.player.body.velocity.y * 0.003;
+            }
+        }
 
         this.handleMovement();
         this.handleWeaponSwitch();
