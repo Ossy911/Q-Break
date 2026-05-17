@@ -58,6 +58,10 @@ class AudioController {
         gain.connect(this.ctx.destination);
         noise.start();
     }
+
+    playUIBlip() {
+        this.playTone(600, 'sine', 0.05, 0.1);
+    }
 }
 const gameAudio = new AudioController();
 
@@ -353,6 +357,9 @@ class GameScene extends Phaser.Scene {
     }
 
     setActiveWeapon(type) {
+        if (this.activeWeapon !== type) {
+            gameAudio.playUIBlip();
+        }
         this.activeWeapon = type;
         document.querySelectorAll('.weapon').forEach(w => w.classList.remove('active'));
         document.getElementById(`weapon-${type}`).classList.add('active');
