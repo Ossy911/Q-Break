@@ -519,6 +519,12 @@ class GameScene extends Phaser.Scene {
         if (enemy.health <= 0) {
             this.score += 100;
             this.createExplosion(enemy.x, enemy.y, enemy.enemyType === 'brute' ? 0x7a00ff : 0xff00ff);
+            
+            // Add dramatic camera shake for large Quantum explosions and Brute defeats
+            if (bullet.type === 'quantum' || enemy.enemyType === 'brute') {
+                this.cameras.main.shake(200, 0.015);
+            }
+            
             enemy.destroy();
             this.enemiesDefeatedInWave++;
             this.checkWaveProgress();
