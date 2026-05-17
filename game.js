@@ -564,6 +564,32 @@ class GameScene extends Phaser.Scene {
         if (this.spawnEvent) this.spawnEvent.destroy();
         this.showMessage(`WAVE ${this.currentWave} INCOMING`);
         
+        // Cinematic floating wave banner
+        const waveText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY - 50,
+            `WAVE ${this.currentWave}`,
+            {
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: '64px',
+                fontWeight: 'bold',
+                color: '#ff00ff',
+                stroke: '#00f2ff',
+                strokeThickness: 3
+            }
+        ).setOrigin(0.5).setDepth(100).setAlpha(0).setScale(0.5);
+        
+        this.tweens.add({
+            targets: waveText,
+            alpha: 1,
+            scale: 1.2,
+            duration: 500,
+            ease: 'Back.easeOut',
+            yoyo: true,
+            hold: 1500,
+            onComplete: () => waveText.destroy()
+        });
+        
         // Resume after 3 seconds
         this.time.delayedCall(3000, () => {
             this.isWaveTransitioning = false;
