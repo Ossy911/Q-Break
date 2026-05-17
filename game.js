@@ -23,6 +23,10 @@ class AudioController {
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
     }
+
+    playClassicalShoot() {
+        this.playTone(880, 'square', 0.1, 0.05); // High pitched, short
+    }
 }
 const gameAudio = new AudioController();
 
@@ -344,6 +348,10 @@ class GameScene extends Phaser.Scene {
         const pointer = this.input.activePointer;
         const bullet = this.projectiles.create(this.player.x, this.player.y, `bullet-${this.activeWeapon}`);
         bullet.type = this.activeWeapon;
+        
+        if (this.activeWeapon === 'classical') {
+            gameAudio.playClassicalShoot();
+        }
         
         this.physics.moveTo(bullet, pointer.x, pointer.y, 600);
         bullet.setRotation(Phaser.Math.Angle.Between(bullet.x, bullet.y, pointer.x, pointer.y));
