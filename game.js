@@ -517,7 +517,26 @@ class GameScene extends Phaser.Scene {
         bullet.destroy();
 
         if (enemy.health <= 0) {
-            this.score += 100;
+            const points = enemy.enemyType === 'brute' ? 500 : (enemy.enemyType === 'satoshi' ? 200 : 100);
+            this.score += points;
+            
+            // Floating score text popup
+            const scoreText = this.add.text(enemy.x, enemy.y - 10, `+${points}`, {
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: '14px',
+                color: enemy.enemyType === 'brute' ? '#7a00ff' : '#00f2ff',
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0.5).setDepth(20);
+            
+            this.tweens.add({
+                targets: scoreText,
+                y: scoreText.y - 40,
+                alpha: 0,
+                duration: 800,
+                onComplete: () => scoreText.destroy()
+            });
+
             this.createExplosion(enemy.x, enemy.y, enemy.enemyType === 'brute' ? 0x7a00ff : 0xff00ff);
             
             // Add dramatic camera shake for large Quantum explosions and Brute defeats
