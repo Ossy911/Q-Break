@@ -27,6 +27,10 @@ class AudioController {
     playClassicalShoot() {
         this.playTone(880, 'square', 0.1, 0.05); // High pitched, short
     }
+
+    playQuantumShoot() {
+        this.playTone(220, 'sawtooth', 0.3, 0.08); // Lower, thicker
+    }
 }
 const gameAudio = new AudioController();
 
@@ -351,6 +355,8 @@ class GameScene extends Phaser.Scene {
         
         if (this.activeWeapon === 'classical') {
             gameAudio.playClassicalShoot();
+        } else if (this.activeWeapon === 'quantum') {
+            gameAudio.playQuantumShoot();
         }
         
         this.physics.moveTo(bullet, pointer.x, pointer.y, 600);
